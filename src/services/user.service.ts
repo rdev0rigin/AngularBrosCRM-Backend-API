@@ -1,13 +1,10 @@
-
-import {UserWorker} from '../models/user-workers.model';
+import {UserServices} from '../models/user-workers.model';
 var db = require('../database/db');
-let user: UserWorker = <UserWorker>{};
+var user: UserServices = <UserServices>{};
 user.postTo = function postUser(socket, body): void {
-	db.users.update(body, {
-		where: {
-			id: body.id
-		}
-	}).then(updatedUser => {
+	db.users.update(body.attributes, {where: {id: body.id}})
+		.then(updatedUser => {
+		console.log('updatedUser', updatedUser);
 		socket.emit('post.user', updatedUser);
 	}, err => console.log(err));
 };

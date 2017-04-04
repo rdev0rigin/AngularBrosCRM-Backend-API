@@ -5,7 +5,7 @@ var app = express();
 var server = http.createServer(app);
 var io = socketio(server);
 var db = require('./database/db');
-var user = require('./workers/user.workers');
+var user = require('./services/user.service');
 db.sequelize.sync().then(() => {
 	// db.users.create({
 	// 	name: '(R)Development Webware'

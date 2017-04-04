@@ -1,5 +1,5 @@
 {
-  "nextFreeModuleId": 20,
+  "nextFreeModuleId": 21,
   "modules": {
     "byIdentifier": {
       "multi main": 0,
@@ -21,7 +21,8 @@
       "dist/src/database/models/Companies.Model.js": 16,
       "dist/src/database/models/Quotes.Model.js": 17,
       "dist/src/database/models/QuoteLines.Model.js": 18,
-      "dist/src/workers/user.workers.js": 19
+      "dist/src/workers/user.workers.js": 19,
+      "dist/src/services/user.service.js": 20
     }
   },
   "nextFreeChunkId": 1,

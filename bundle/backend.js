@@ -70,7 +70,7 @@ require("source-map-support").install();
 	var server = http.createServer(app);
 	var io = socketio(server);
 	var db = __webpack_require__(7);
-	var user = __webpack_require__(19);
+	var user = __webpack_require__(20);
 	db.sequelize.sync().then(function () {
 	    // db.users.create({
 	    // 	name: '(R)Development Webware'
@@ -403,18 +403,17 @@ require("source-map-support").install();
 	//# sourceMappingURL=QuoteLines.Model.js.map
 
 /***/ },
-/* 19 */
+/* 19 */,
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	var db = __webpack_require__(7);
 	var user = {};
 	user.postTo = function postUser(socket, body) {
-	    db.users.update(body, {
-	        where: {
-	            id: body.id
-	        }
-	    }).then(function (updatedUser) {
+	    db.users.update(body.attributes, { where: { id: body.id } })
+	        .then(function (updatedUser) {
+	        console.log('updatedUser', updatedUser);
 	        socket.emit('post.user', updatedUser);
 	    }, function (err) { return console.log(err); });
 	};
@@ -443,7 +442,7 @@ require("source-map-support").install();
 	user.dropByID = function deleteUser(socket, req) {
 	};
 	module.exports = user;
-	//# sourceMappingURL=user.workers.js.map
+	//# sourceMappingURL=user.service.js.map
 
 /***/ }
 /******/ ]);
