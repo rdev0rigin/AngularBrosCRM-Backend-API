@@ -1,4 +1,7 @@
-import server from './app';
+import {Server} from './app';
 
-console.log("Listening on port Taxi...");
-server.listen(1729);
+function boot() {
+	Server.bootstrap();
+}
+
+boot();

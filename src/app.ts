@@ -1,44 +1,57 @@
 import * as http from 'http';
 import * as express from 'express';
-import * as socketio from 'socket.io';
-var app = express();
-var server = http.createServer(app);
-var io = socketio(server);
-var db = require('./database/db');
-var user = require('./services/user.service');
-db.sequelize.sync().then(() => {
-	// db.users.create({
-	// 	name: '(R)Development Webware'
-	// })
-});
+import * as Socketio from 'socket.io';
+import {CRMStoreManager} from './orm/store-manager';
+import {ResponseObject} from './models/response-object.model';
+import {dbConfig} from './orm/config';
 
-// collects open socket connections
-let sockets = [];
-io.on('connection', socket => {
-	sockets.push(socket);
+export class Server {
+	private app: express.Application;
+	private server;
+	private IO;
+	private crmStoreManager: CRMStoreManager;
 
-	socket.on('post.user', body => {
-		user.postTo(socket, body);
-	});
+	public static bootstrap(): Server {
+		return new Server();
+	}
 
-	socket.on('get.users', body => {
-		console.log('hit getUsers', body);
-		user.getAll(socket, body);
-	});
+	constructor(){
+		this.app = express();
+		this.config();
+		this.endPoints();
+	}
 
-	socket.on('get.userById', body => {
-		user.getByID(socket, body);
-	});
+	private config(): void {
+		this.server = http.createServer(this.app);
+		console.log('listening on port Taxi Cab');
+		this.IO = Socketio(this.server);
+		this.server.listen(1729);
+		this.crmStoreManager = new CRMStoreManager(dbConfig);
+	}
 
-	socket.on('delete.user', request => {
-
-	});
-
-	socket.on('disconnect', () => {
-
-		// removes closed socket connections
-		sockets = sockets.filter(s => s !== socket);
-	});
-});
-
-export default server;
+	private endPoints(): void {
+		this.IO.on('connection', socket => {
+			console.log('on hit 35', socket);
+			socket.on('user', payload => {
+			console.log('on hit get', payload);
+			// this.crmStoreManager
+			// 	.getUser(payload.id)
+			// 	.then(response => {
+			// 		socket.emit('user.get.response' , response);
+			// 	})
+			// });
+			socket.on('user.set', payload => {
+				console.log('on hit 43', payload);
+			// 	this.crmStoreManager
+			// 		.setUserProp(payload.id, payload.propObj)
+			// 		.then(response => {
+			// 			socket.emit('user.set.response', response);
+			// 	})
+			});
+			socket.on('disconnect', ()=> {
+				console.log('dc\'d');
+			})
+		});
+	})
+	}
+}

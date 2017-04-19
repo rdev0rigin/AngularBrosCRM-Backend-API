@@ -1,23 +1,26 @@
 {
-  "name": "backend-seed",
+  "name": "angular-bros-socket-backend",
   "scripts": {
-    "start": "npm run clean && tsc && webpack && concurrently \"tsc -w\" \"node bundle/backend.js\"",
-    "clean": "rm -rf dist/ && rm -rf build/"
+    "prod-push": "git add -A && git commit -m \"updated bundle\" && git push origin master",
+    "start": "npm run clean && webpack -p && node bundle/backend.js",
+    "clean": "rm -rf bundle/"
   },
   "dependencies": {
-    "bluebird": "^3.5.0",
+    "@types/lodash": "^4.14.62",
+    "@types/sequelize": "^3.4.43",
     "concurrently": "^3.4.0",
     "express": "^4.12.2",
-    "sequelizer": "^1.1.3",
+    "mailgun-js": "^0.10.1",
+    "sequelize": "^3.30.4",
     "socket.io": "^1.3.5",
     "source-map-support": "^0.4.14",
-    "sqlite3": "^3.1.8",
-    "webpack": "^1.7.3",
-    "webpack-dev-server": "^1.7.0",
-    "webpack-merge": "^4.1.0"
+    "sqlite3": "^3.1.8"
   },
   "devDependencies": {
-    "@types/node": "^7.0.5"
-  },
-  "version": "0.1.1"
+    "@types/node": "^7.0.5",
+    "awesome-typescript-loader": "^3.1.2",
+    "typescript": "~2.2.2",
+    "webpack": "^2.4.1",
+    "webpack-merge": "^4.1.0"
+  }
 }

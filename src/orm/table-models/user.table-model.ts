@@ -1,54 +1,58 @@
-'use strict'
-
-module.exports = (sequelize, DataTypes) => {
-	const User = sequelize.define('user', {
+export function userModel(DataTypes, sequlize) {
+	return sequlize.define('user', {
 		id: {
 			type: DataTypes.UUID,
 			primaryKey: true,
 			defaultValue: DataTypes.UUIDV4
 		},
-		name: {
+		firstName: {
 			type: DataTypes.STRING,
-			required: true
+		},
+		lastName: {
+			type: DataTypes.STRING,
 		},
 		passHash: {
 			type: DataTypes.STRING,
 		},
 		role: {
 			type: DataTypes.ENUM,
-			values: ['user', 'admin', 'contact', 'disabled']
+			values: ['general', 'blocked', 'admin', 'removed'],
+			required: true
 		},
 		email: {
+			type: DataTypes.STRING,
+			required: true
+		},
+		addressOne: {
 			type: DataTypes.STRING
 		},
-		address: {
+		addressTwo: {
 			type: DataTypes.STRING
 		},
 		phone: {
 			type: DataTypes.STRING
 		},
-		companyName: {
+		businessName: {
 			type: DataTypes.STRING
 		},
-		companyWeb: {
+		businessWeb: {
 			type: DataTypes.STRING
 		},
-		companyPhone: {
+		businessPhone: {
 			type: DataTypes.STRING
 		},
-		companyFax: {
+		businessFax: {
 			type: DataTypes.STRING
 		},
 		created_at: {
 			type: DataTypes.DATE,
 			allowNull: false
 		},
-		updated_at:  DataTypes.DATE,
+		updated_at: DataTypes.DATE,
 		deleted_at: DataTypes.DATE
 	}, {
 		freezeTableName: true,
 		paranoid: false,
 		underscored: true,
-	});
-	return User;
-};
+	})
+}
