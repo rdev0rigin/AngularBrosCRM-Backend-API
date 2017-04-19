@@ -31,15 +31,17 @@ export class Server {
 
 	private endPoints(): void {
 		this.IO.on('connection', socket => {
-			console.log('on hit 35', socket);
-			socket.on('user', payload => {
-			console.log('on hit get', payload);
-			// this.crmStoreManager
-			// 	.getUser(payload.id)
-			// 	.then(response => {
-			// 		socket.emit('user.get.response' , response);
-			// 	})
-			// });
+			socket.on('user.get', payload => {
+				console.log(payload);
+				// this.crmStoreManager
+				// 	.getUser(payload.id)
+				// 	.then(response => {
+				// 		socket.emit('user.response' , response);
+				// 	})
+				// }, response => {
+				// 	console.log('ack?', response);
+			});
+			socket.emit('user.response', ['three']);
 			socket.on('user.set', payload => {
 				console.log('on hit 43', payload);
 			// 	this.crmStoreManager
@@ -52,6 +54,5 @@ export class Server {
 				console.log('dc\'d');
 			})
 		});
-	})
 	}
 }
