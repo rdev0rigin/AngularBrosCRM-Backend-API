@@ -3,7 +3,10 @@
     
 ## Unreleased
 
-## Unreleased 00/00/0000
+## Version 0.2.0 04/20/2017
+
+[code] Created get and update in `StoreManager`
+[refactor] Changed all but the unused models, into Typescript
 [bug] fixed update function in `user.services` 
 [refactor] changed nomenclature of workers to service
 

@@ -48,9 +48,12 @@ export class CRMStoreManager implements StoreManager {
 
 	public getUser(id): Promise<any> {
 		return new Promise((resolve, reject) => {
-			this.User.findAll().then(instances => {
-				console.log(instances);
-				resolve(instances);
+			this.User.findById(id).then((userInstance: any) => {
+				if (userInstance.dataValues.id) {
+					resolve(userInstance.dataValues);
+				} else {
+					reject(userInstance);
+				}
 			});
 		});
 	}
@@ -59,7 +62,9 @@ export class CRMStoreManager implements StoreManager {
 		return new Promise((resolve, reject) => {
 			this.User.findById(id).then(userInstance => {
 				console.log('found user', userInstance);
-				resolve(userInstance.update(Object.keys(prop)[0], prop));
+				resolve(userInstance.update({
+					[prop.key]:prop.value
+				}))
 			}, error => {
 				//todo will it break??
 				reject(new Error('update error with' + error));

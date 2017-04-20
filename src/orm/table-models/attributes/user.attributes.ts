@@ -1,5 +1,4 @@
 import * as Sequelize from 'sequelize';
-import {User} from '../../../models/user.model';
 
 export interface UserAttributes {
 	id?: string,
