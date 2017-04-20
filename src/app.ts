@@ -32,27 +32,20 @@ export class Server {
 	private endPoints(): void {
 		this.IO.on('connection', socket => {
 			socket.on('user.get', payload => {
-				console.log(payload);
 				this.crmStoreManager
 					.getUser(payload.id)
 					.then(user => {
 						socket.emit('user.get.response' , user);
 					});
-			}, response => {
-				console.log('ack?', response);
-			});
-			socket.emit('user.response', ['three']);
+			},
+			socket.emit('user.response', ['three']));
 			socket.on('user.set', payload => {
-				console.log('on hit 43', payload);
 				this.crmStoreManager
 					.setUserProp(payload.id, payload.prop)
 					.then(response => {
 						socket.emit('user.set.response', response);
 				})
 			});
-			socket.on('disconnect', ()=> {
-				console.log('dc\'d');
-			})
 		});
 	}
 }
