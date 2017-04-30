@@ -2,13 +2,20 @@ var webpack = require('webpack');
 var path = require('path');
 var fs = require('fs');
 var webpackMerge = require('webpack-merge');
+const WebpackShellPlugin = require('webpack-shell-plugin');
 
 // backend
+
+// from http://jlongster.com/Backend-Apps-with-Webpack--Part-I
 
 var nodeModules = fs.readdirSync('node_modules')
 	.filter(function(x) {
 		return ['.bin'].indexOf(x) === -1;
 	});
+
+	// .forEach(function(mod) {
+	// 	nodeModules[mod] = 'commonjs ' + mod;
+	// });
 
 var backendConfig = {
 	entry: [
@@ -32,8 +39,12 @@ var backendConfig = {
 			callback();
 		}
 	],
+
 	// recordsPath: path.join(__dirname, 'bundle/_records'),
 	plugins: [
+		new WebpackShellPlugin({
+			onBuildEnd: ['node ./bundle/backend.js']
+		})
 	],
 	module: {
 		loaders: [
@@ -45,6 +56,7 @@ var backendConfig = {
 			}
 		]
 	}
+
 };
 
 var defaultConfig = {
@@ -68,6 +80,7 @@ var defaultConfig = {
 		clearImmediate: false,
 		setImmediate: false
 	}
+
 };
 
 module.exports = webpackMerge(defaultConfig, backendConfig);

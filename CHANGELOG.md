@@ -2,6 +2,8 @@
 >please update so those that are not psychic know what you may have done to the module, thank you! ;) We use Semantic Versioning.
     
 ## Unreleased
+[code] added endpoints for `Contacts`, `Companies`, `Notes`, and `Quotes`
+[code] added query functions and create functions for new endpoints to table-models in `store-manager`
 
 ## Version 0.2.0 04/20/2017
 

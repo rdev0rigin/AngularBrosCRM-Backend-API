@@ -14,9 +14,9 @@ export interface UserAttributes {
 	businessWeb?: string,
 	businessPhone?: string,
 	businessFax?: string,
-	created_at?: Date,
-	updated_at?: Date,
-	deleted_at?: Date
+	// created_at?: Date,
+	// updated_at?: Date,
+	// deleted_at?: Date
 }
 
 export interface UserInstance extends Sequelize.Instance<UserAttributes>, UserAttributes{
