@@ -3,10 +3,10 @@ import {DBConfig} from './config';
 import {userModel} from './table-models/user.table-model';
 import {UserAttributes, UserModel} from './table-models/attributes/user.attributes';
 import {companyModel} from './table-models/company.table-model';
-import {CompanyModel} from './table-models/attributes/company.attributes';
+import {CompanyAttributes, CompanyModel} from './table-models/attributes/company.attributes';
 import {ContactModel} from './table-models/attributes/contact.attributes';
 import {NoteModel} from './table-models/attributes/note.attributes';
-import {QuoteModel} from './table-models/attributes/quote.attributes';
+import {QuoteAttributes, QuoteModel} from './table-models/attributes/quote.attributes';
 import {QuoteLineModel} from './table-models/attributes/quote-line.attributes';
 import {contactModel} from './table-models/contact.table-model';
 import {quoteLineModel} from './table-models/quote-line.table-model';
@@ -20,9 +20,10 @@ export interface StoreManager {
 	// registerUser(user: UserAttributes): void;
 	// deleteUser(): Promise<any>;
 	createTestUser(): Promise<any>;
+	createCompany(company: CompanyAttributes): Promise<any>;
+	setCompaniesProp(id, prop): Promise<any>;
 }
-
-export class CRMStoreManager implements StoreManager {
+export class CRMStoreManager {
 	public sequelize: sequelizeStatic.Sequelize;
 	public User: UserModel;
 	public Company: CompanyModel;
@@ -44,7 +45,6 @@ export class CRMStoreManager implements StoreManager {
 				email: 'test@tester.com',
 				role: 'admin'
 				},{
-				include: [this.Company, this.Contact, this.Quote, this.QuoteLine, this.Note]
 					// this.Company.create({
 					// email: 'test@company.com'},
 					// {
@@ -67,12 +67,13 @@ export class CRMStoreManager implements StoreManager {
 	public createTestUser(): Promise<UserAttributes> {
 		return new Promise((resolve, reject) => {
 			this.sequelize.sync().then(instance => {
-				this.User.create({
+			return instance.User.create({
 					email: 'test@tester.com',
 					role: 'general'
 				})
+
 			}).then(userInstance =>{
-				resolve(userInstance.dataValues);
+				resolve(userInstance);
 				reject('error with test user');
 			})
 		})
@@ -86,14 +87,14 @@ export class CRMStoreManager implements StoreManager {
 		this.Quote = quoteModel(sequelizeStatic, this.sequelize);
 		this.QuoteLine = quoteLineModel(sequelizeStatic, this.sequelize);
 		this.User.hasMany(this.Company);
+		this.Contact.belongsTo(this.Company);
+		this.Contact.hasMany(this.Note);
 		this.Company.belongsTo(this.User);
 		this.Company.hasMany(this.Contact);
-		this.Contact.belongsTo(this.Company);
+		this.Company.hasMany(this.Quote);
 		this.Quote.belongsTo(this.Company);
 		this.Quote.hasMany(this.QuoteLine);
 		this.QuoteLine.belongsTo(this.Quote);
-		this.Company.hasMany(this.Quote);
-		this.Contact.hasMany(this.Note);
 		// this.Contact = contactModel(sequelizeStatic, this.sequelize);
 		// this.Resume.hasOne(this.Experience);
 	}
@@ -111,14 +112,12 @@ export class CRMStoreManager implements StoreManager {
 		});
 	}
 
-	public getUser(id): Promise<any> {
+	public getUser(id: string): Promise<any> {
+		console.log('??', id);
 		return new Promise((resolve, reject) => {
 			this.User.findById(id).then((userInstance: any) => {
-				if (userInstance && userInstance.dataValues.id) {
 					resolve(userInstance.dataValues);
-				} else {
 					reject('error with find ID');
-				}
 			});
 		});
 	}
@@ -136,7 +135,8 @@ export class CRMStoreManager implements StoreManager {
 	}
 
 	public getCompanies(id?: string): Promise<any> {
-		if(id) {
+		console.log('get companies');
+		if(id ) {
 			return new Promise((resolve, reject) => {
 				this.Company.findById(id).then((companiesInstance: any) => {
 					if (companiesInstance && companiesInstance.dataValues.id) {
@@ -148,12 +148,10 @@ export class CRMStoreManager implements StoreManager {
 			});
 		} else {
 			return new Promise((resolve, reject) => {
-				this.Company.findAll().then((companies => {
-					if (companies.length > 0) {
-						resolve(companies)
-					} else {
-						reject('error: no companies found');
-					}
+				this.Company.findAll({include: [this.Contact, this.Quote]}).then((companies => {
+					console.log('company', companies);
+					resolve(companies);
+					reject('error: no companies found');
 				}));
 			});
 		}
@@ -172,10 +170,11 @@ export class CRMStoreManager implements StoreManager {
 		})
 	}
 
-	public createCompany(company: any): Promise<any> {
+	public createCompany(company: CompanyAttributes): Promise<any> {
 		return new Promise((resolve, reject) => {
 			this.Company.create(company).then((companyInstance: any) => {
-				resolve(companyInstance);
+				console.log(companyInstance);
+				resolve(companyInstance.dataValues);
 			}, error => {
 				reject('update error with' + error);
 			});
@@ -219,10 +218,10 @@ export class CRMStoreManager implements StoreManager {
 		})
 	}
 
-	public createContacts(company: any): Promise<any> {
+	public createContacts(contact: any): Promise<any> {
 		return new Promise((resolve, reject) => {
-			this.Contact.create(company).then((companyInstance: any) => {
-				resolve(companyInstance);
+			this.Contact.create(contact).then((contactInstance: any) => {
+				resolve(contactInstance);
 			}, error => {
 				reject('update error with' + error);
 			});
@@ -266,20 +265,20 @@ export class CRMStoreManager implements StoreManager {
 		})
 	}
 
-	public createNotes(company: any): Promise<any> {
+	public createNotes(note: any): Promise<any> {
 		return new Promise((resolve, reject) => {
-			this.Note.create(company).then((companyInstance: any) => {
-				resolve(companyInstance);
+			this.Note.create(note).then((noteInstance: any) => {
+				resolve(noteInstance);
 			}, error => {
 				reject('update error with' + error);
 			});
 		})
 	}
 
-	public getQuotes(id?: string): Promise<any> {
-		if(id) {
+	public getQuotes(payload: any): Promise<QuoteAttributes[]> {
+		if(payload.id) {
 			return new Promise((resolve, reject) => {
-				this.Quote.findById(id, {
+				this.Quote.findById(payload.id, {
 					include:[this.QuoteLine]
 				}).then((quotesInstance: any) => {
 					if (quotesInstance && quotesInstance.dataValues.id) {
@@ -290,15 +289,12 @@ export class CRMStoreManager implements StoreManager {
 				});
 			});
 		} else {
-			return new Promise((resolve, reject) => {
+			return new Promise((resolve) => {
 				this.Quote.findAll({
 					include: [this.QuoteLine]
 				}).then((quotes => {
-					if (quotes.length > 0) {
-						resolve(quotes)
-					} else {
-						reject('error: no quotes found');
-					}
+				console.log('find all', quotes);
+					resolve(quotes);
 				}));
 			});
 		}
@@ -319,8 +315,8 @@ export class CRMStoreManager implements StoreManager {
 
 	public createQuotes(quotes: any): Promise<any> {
 		return new Promise((resolve, reject) => {
-			this.Quote.create(quotes).then((companyInstance: any) => {
-				resolve(companyInstance);
+			this.Quote.create(quotes).then((quoteInstance: any) => {
+				resolve(quoteInstance);
 			}, error => {
 				reject('update error with' + error);
 			});
