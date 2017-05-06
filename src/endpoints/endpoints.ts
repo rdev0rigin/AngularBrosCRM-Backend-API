@@ -1,189 +1,176 @@
 import {CRMStoreManager} from '../orm/store-manager';
 import * as SocketIO from 'socket.io';
+import {error} from 'util';
+import {NoteAttributes} from '../orm/table-models/attributes/note.attributes';
+import {QuoteAttributes} from '../orm/table-models/attributes/quote.attributes';
+
 export class Endpoints {
-
-	constructor() {
-	}
-
+	constructor() {}
 	public socketOnNotes(socket: SocketIO, crmStoreManager) {
-		socket.on('note.create', (payload?: any) => {
-			console.log('note.get', payload);
-			if (payload.hasOwnProperty('id')) {
-				let id = payload.id;
-				crmStoreManager
-					.getnote(id)
+		socket.on('notes.create', (payload: any) => {
+			if (payload){
+				crmStoreManager.createNote(payload)
 					.then(note => {
-						socket.emit('note.get.response', note);
+						socket.emit('notes.create.response', note);
 					});
 			} else {
-				socket.emit('note.get.response', {error: 'No ID in payload'})
+				socket.emit('notes.create.response', {error: 'Cannot create without payload.'});
 			}
 		});
 
-		socket.on('note.get', (payload?: any) => {
-			console.log('note.get', payload);
-			if (payload.hasOwnProperty('id')) {
-				let id = payload.id;
-				crmStoreManager
-					.getNote(id)
+		socket.on('notes.get', (payload?: any) => {
+			if (payload && typeof payload.id === 'string') {
+				crmStoreManager.getNote(payload)
 					.then(note => {
-						socket.emit('note.get.response', note);
+						socket.emit('notes.get.response', note);
 					});
 			} else {
-				socket.emit('note.get.response', {error: 'No ID in payload'})
+				crmStoreManager.getNotes()
+					.then((notes: NoteAttributes[])=> {
+						socket.emit('notes.get.response', notes);
+				});
 			}
 		});
 
-		socket.on('note.set', (payload?: any) => {
-			crmStoreManager
-				.setNoteProp(payload.id, payload.prop)
+		socket.on('notes.set', (payload: any) => {
+			crmStoreManager.setNoteProp(payload)
 				.then(response => {
-					socket.emit('note.set.response', response);
+					socket.emit('notes.set.response', response);
 				});
 		})
 	}
 
 	public socketOnUsers(socket: SocketIO, crmStoreManager){
 		socket.on('user.get', (payload?: any) => {
-			console.log('user.get', payload);
-			if (payload.hasOwnProperty('id')) {
-				let id = payload.id;
-				crmStoreManager
-					.getUser(id)
+			if (payload && typeof payload.id === 'string') {
+				crmStoreManager.getUser(payload)
 					.then(user => {
 						socket.emit('user.get.response', user);
+					}, err => {
+						console.log('error', err)
 					});
 			} else {
 				socket.emit('user.get.response', {error: 'No ID in payload'})
 			}
 		});
 
-		socket.on('user.get', (payload?: any) => {
-			console.log('user.get', payload);
-			if (payload.hasOwnProperty('id')) {
-				let id = payload.id;
-				crmStoreManager
-					.getUser(id)
-					.then(user => {
-						socket.emit('user.get.response', user);
-					});
-			} else {
-				socket.emit('user.get.response', {error: 'No ID in payload'})
-			}
-		});
-
-		socket.on('user.set', (payload?: any) => {
+		socket.on('user.set', (payload: any) => {
 			crmStoreManager
-				.setUserProp(payload.id, payload.prop)
+				.setUserProp(payload)
 				.then(response => {
+					console.log('res', response);
 					socket.emit('user.set.response', response);
+				}, err => {
+					console.log('error', err)
 				});
 		})
-
 	}
 
 	public socketOnQuotes(socket: SocketIO , crmStoreManager: CRMStoreManager) {
-		socket.on('quote.create', (payload?: any) => {
-			console.log('payload 0', payload.quoteProp);
-			crmStoreManager.createQuotes(payload.props).then(quote => {
-				socket.emit('quotes.post.response', quote);
-			});
+		socket.on('quotes.create', (payload: any) => {
+			if (payload){
+				crmStoreManager.createQuote(payload)
+					.then((quote: QuoteAttributes) => {
+						socket.emit('quotes.create.response', quote);
+					}, err => {
+						console.log('error', err)
+					});
+			}
 		});
 
 		socket.on('quotes.get', (payload?: any) => {
-				console.log('payload 0quotes get', payload);
-				crmStoreManager.getQuotes(payload).then(quotes => {
-					console.log('hit response 96');
+			if(payload && typeof payload.id === 'string') {
+				crmStoreManager.getQuote(payload)
+					.then(quotes => {
+						socket.emit('quotes.get.response', quotes);
+					}, err => {
+						console.log('error', err)
+					});
+			} else {
+				crmStoreManager.getQuotes().then((quotes: QuoteAttributes[]) => {
 					socket.emit('quotes.get.response', quotes);
-				});
+				})
+			}
 		});
 
-		socket.on('quotes.post', (payload?: any) => {
-			if (payload) {
-				console.log('payload 0', payload);
-				crmStoreManager.createQuotes(payload).then(quotes => {
-					socket.emit('quotes.post.response', quotes);
-				});
-			} else {
-				crmStoreManager.createQuotes(payload.quoteProps).then(quotes => {
-					socket.emit('quotes.post.response', quotes);
-				});
-			}
-
-			socket.on('quoteLines.post', (payload?: any) => {
-				crmStoreManager.createQuotes(payload).then(quotes => {
-					socket.emit('quoteLines.post.response', quotes);
-				})
+		socket.on('quotes.set', (payload: any) => {
+			crmStoreManager.setQuoteProp(payload).then(quotes => {
+				socket.emit('quotes.set.response', quotes);
+			}, err => {
+				console.log('error', err)
 			})
 		})
 	}
 
 	public socketOnContacts(socket: SocketIO, crmStoreManager: CRMStoreManager) {
 		socket.on('contacts.create', (payload?: any) => {
-			crmStoreManager.createContacts(payload).then(contact => {
-				socket.emit('contacts.create.response', contact);
-			});
+			if(payload) {
+				crmStoreManager.createContact(payload).then(contact => {
+					socket.emit('contacts.create.response', contact);
+				}, err => {
+					console.log('error', err)
+				});
+			}
 		});
 
 		socket.on('contacts.get', (payload?: any) => {
-			if (payload){
-				crmStoreManager.getContacts(payload.id)
+			if (payload && typeof payload.id === 'string'){
+				crmStoreManager.getContact(payload)
 					.then(contacts => {
 						socket.emit('contacts.get.response', payload);
+					}, err => {
+						console.log('error', err)
 					});
 			} else {
 				crmStoreManager.getContacts()
 					.then(contacts => {
-						socket.emit('contacts.get.response', payload);
+						socket.emit('contacts.get.response', contacts);
+				}, err => {
+						console.log('error', err)
 					});
 			}
 		});
 
-		socket.on('contacts.post', (payload: any) => {
-			crmStoreManager.setContactsProp(payload.id, payload.prop)
+		socket.on('contacts.set', (payload: any) => {
+			if(payload && typeof payload.id === 'string')
+				crmStoreManager.setContactProp(payload)
 				.then(contacts => {
-					console.log('payload 0', payload);
-					socket.emit('contacts.post.response', contacts);
+					socket.emit('contacts.set.response', contacts);
+				}, err => {
+					console.log('error', err)
 				});
 		});
-
 	}
 
 	public socketOnCompanies(socket: SocketIO, crmStoreManager: CRMStoreManager) {
 		socket.on('companies.get', (payload?: any) => {
-			console.log('COMPANIES',payload);
-			if (payload) {
-				crmStoreManager.getCompanies(payload.id)
+			if (payload && typeof payload.id === 'string') {
+				crmStoreManager.getCompany(payload)
 					.then((companies: any) => {
 						socket.emit('companies.get.response', companies);
 					}, err => {
 						console.log('error', err)
 					});
 			} else {
-				crmStoreManager
-					.getCompanies()
+				crmStoreManager.getCompanies()
 					.then((companies: any) => {
 						socket.emit('companies.get.response', companies);
 					}, err => {
 						console.log('error', err)
 					});
 			}
-
 		});
 
-		socket.on('companies.post', (payload?: any) => {
-			if (payload) {
-				crmStoreManager
-					.setCompaniesProp(payload.id, payload.prop)
-					.then(company => {
-						socket.emit('companies.post.response', company);
-					});
+		socket.on('companies.set', (payload: any) => {
+			if (payload && typeof payload.id === 'string') {
+				crmStoreManager.setCompanyProp(payload)
+				.then(company => {
+					socket.emit('companies.set.response', company);
+				}, err => {
+					console.log('error', err)
+				});
 			} else {
-				crmStoreManager
-					.setCompaniesProp(payload.id, payload.prop)
-					.then(company => {
-						socket.emit('companies.post.response', company);
-					});
+				socket.emit('companies.set.response', {error: 'Error: No payload or id'});
 			}
 		});
 

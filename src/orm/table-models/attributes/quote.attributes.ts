@@ -5,7 +5,6 @@ export interface QuoteAttributes {
 	name?: string;
 }
 
-export interface QuoteInstance extends Sequelize.Instance<QuoteAttributes>, QuoteAttributes{
-}
+export interface QuoteInstance extends Sequelize.Instance<QuoteAttributes>, QuoteAttributes{}
 
 export interface QuoteModel extends Sequelize.Model<QuoteInstance, QuoteAttributes> {}

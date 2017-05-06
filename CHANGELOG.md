@@ -2,6 +2,7 @@
 >please update so those that are not psychic know what you may have done to the module, thank you! ;) We use Semantic Versioning.
     
 ## Unreleased
+[refactor] cleaned up `endpoints.ts` and their related query functions in `CRMStoreManager`
 
 ## Version 0.2.1 05/03/2017
 [refactor] built an `Endpoints` 

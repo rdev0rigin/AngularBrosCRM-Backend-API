@@ -5,6 +5,9 @@ export function noteModel(DataTypes, sequlize) {
 			primaryKey: true,
 			defaultValue: DataTypes.UUIDV4
 		},
+		name: {
+			type: DataTypes.STRING,
+		},
 		title: {
 			type: DataTypes.STRING,
 		},

@@ -2,7 +2,6 @@ import * as http from 'http';
 import * as express from 'express';
 import * as Socketio from 'socket.io';
 import {CRMStoreManager} from './orm/store-manager';
-import {dbConfig} from './orm/config';
 import {Endpoints} from './endpoints/endpoints';
 
 export class Server extends Endpoints {
@@ -28,7 +27,7 @@ export class Server extends Endpoints {
 		console.log('listening on port ' + this.port);
 		this.server.listen(this.port);
 		this.IO = Socketio(this.server);
-		this.crmStoreManager = new CRMStoreManager(dbConfig);
+		this.crmStoreManager = new CRMStoreManager();
 	}
 
 	private endPoints(): void {
@@ -45,7 +44,6 @@ export class Server extends Endpoints {
 						socket.emit('user.test.create.response', user);
 					})
 			});
-
 		})
 	}
 }

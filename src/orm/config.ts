@@ -12,7 +12,7 @@ export interface DBConfig {
 	storage: string;
 }
 
-export const dbConfig = {
+export const DB_CONFIG = {
 	username: 'rdev',
 	password: '',
 	database: 'angular-bros-crm',
