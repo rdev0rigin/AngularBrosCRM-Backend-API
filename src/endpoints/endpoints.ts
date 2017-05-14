@@ -6,7 +6,7 @@ import {QuoteAttributes} from '../orm/table-models/attributes/quote.attributes';
 
 export class Endpoints {
 	constructor() {}
-	public socketOnNotes(socket: SocketIO, crmStoreManager) {
+	public socketOnNotes(socket: SocketIO, crmStoreManager: CRMStoreManager): void {
 		socket.on('notes.create', (payload: any) => {
 			if (payload){
 				crmStoreManager.createNote(payload)
@@ -40,7 +40,7 @@ export class Endpoints {
 		})
 	}
 
-	public socketOnUsers(socket: SocketIO, crmStoreManager){
+	public socketOnUsers(socket: SocketIO, crmStoreManager: CRMStoreManager){
 		socket.on('user.get', (payload?: any) => {
 			if (payload && typeof payload.id === 'string') {
 				crmStoreManager.getUser(payload)
@@ -55,8 +55,7 @@ export class Endpoints {
 		});
 
 		socket.on('user.set', (payload: any) => {
-			crmStoreManager
-				.setUserProp(payload)
+			crmStoreManager.setUserProp(payload)
 				.then(response => {
 					console.log('res', response);
 					socket.emit('user.set.response', response);
@@ -173,7 +172,6 @@ export class Endpoints {
 				socket.emit('companies.set.response', {error: 'Error: No payload or id'});
 			}
 		});
-
 
 		socket.on('companies.create', (payload?: any) => {
 			crmStoreManager
