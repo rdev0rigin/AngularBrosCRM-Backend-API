@@ -127,7 +127,7 @@ export class CRMStoreManager implements StoreManager{
 			return instance.User.create({
 					email: 'test@tester.com',
 					role: 'general'
-				})
+			})
 			}).then(userInstance =>{
 				resolve(userInstance);
 				reject('error with test user');
@@ -161,17 +161,12 @@ export class CRMStoreManager implements StoreManager{
 
 	public setCompanyProp(payload): Promise<CompanyAttributes> {
 		return new Promise((resolve, reject) => {
-			this.Company.update(payload.prop, {
-				where: {id: payload.id}
-			}).then((response: any) => {
-				if (+response[0] === 1) {
-					this.Company.findById(payload.id)
-						.then((companyInstance: CompanyInstance) => {
-						resolve(companyInstance);
-					}, error => reject('Company set prop error :' + error))
-				}}, error => {
-					reject('update error with' + error);
-			});
+			this.Company.findById(payload.id)
+				.then((companyInstance: CompanyInstance) => {
+						companyInstance.update({[payload.key]: payload.value}).then((updatedCompanyInstance: CompanyInstance) => {
+							resolve(updatedCompanyInstance);
+					}).catch(err => console.log('ERROR : setCompanyProp', err))
+				}, error => reject('Company set prop error :' + error))
 		})
 	}
 

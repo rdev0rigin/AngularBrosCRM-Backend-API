@@ -4,6 +4,7 @@ import {error} from 'util';
 import {NoteAttributes} from '../orm/table-models/attributes/note.attributes';
 import {QuoteAttributes} from '../orm/table-models/attributes/quote.attributes';
 
+//TODO Update To real bi-directional sockets. ;P
 export class Endpoints {
 	constructor() {}
 	public socketOnNotes(socket: SocketIO, crmStoreManager: CRMStoreManager): void {
@@ -160,24 +161,24 @@ export class Endpoints {
 			}
 		});
 
-		socket.on('companies.set', (payload: any) => {
+		socket.on('company.set', (payload: any) => {
 			if (payload && typeof payload.id === 'string') {
 				crmStoreManager.setCompanyProp(payload)
 				.then(company => {
-					socket.emit('companies.set.response', company);
+					socket.emit('company.set.response', company);
 				}, err => {
 					console.log('error', err)
 				});
 			} else {
-				socket.emit('companies.set.response', {error: 'Error: No payload or id'});
+				socket.emit('company.set.response', {error: 'Error: No payload or id'});
 			}
 		});
 
-		socket.on('companies.create', (payload?: any) => {
+		socket.on('company.create', (payload?: any) => {
 			crmStoreManager
 				.createCompany(payload)
 				.then(company => {
-					socket.emit('companies.create.response', company);
+					socket.emit('company.create.response', company);
 				});
 		});
 	}
