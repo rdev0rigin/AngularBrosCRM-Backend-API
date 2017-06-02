@@ -103,10 +103,11 @@ export class Endpoints {
 	}
 
 	public socketOnContacts(socket: SocketIO, crmStoreManager: CRMStoreManager) {
-		socket.on('contacts.create', (payload?: any) => {
+		socket.on('contact.create', (payload?: any) => {
 			if(payload) {
 				crmStoreManager.createContact(payload).then(contact => {
-					socket.emit('contacts.create.response', contact);
+					console.log('contact create response', contact);
+					socket.emit('contact.create.response', contact);
 				}, err => {
 					console.log('error', err)
 				});
@@ -154,6 +155,7 @@ export class Endpoints {
 			} else {
 				crmStoreManager.getCompanies()
 					.then((companies: any) => {
+					console.log('RESPONDER ', companies[0]['$modelOptions'].name);
 						socket.emit('companies.get.response', companies);
 					}, err => {
 						console.log('error', err)

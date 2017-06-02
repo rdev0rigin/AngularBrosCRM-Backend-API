@@ -1,9 +1,12 @@
 # ChangeLog 
->please update so those that are not psychic know what you may have done to the module, thank you! ;) We use Semantic Versioning.
+>To make sense of all your awesome busy-nes to other developers please log changes and use sem-ver. 
     
 ## Unreleased
-[refactor] cleaned up `endpoints.ts` and their related query functions in `CRMStoreManager`
 
+## Version 0.2.3 05/03/2017
+[refactor] rebuilt endpoints and queries to match convention `{payload: { 'prop': {key: prop.key, value: prop}, id?: prop.id, owner_id?:parent,id}}`
+[refactor] cleaned up `endpoints.ts` and their related query functions in `CRMStoreManager`
+ 
 ## Version 0.2.1 05/03/2017
 [refactor] built an `Endpoints` 
  
