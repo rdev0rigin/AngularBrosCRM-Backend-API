@@ -2,6 +2,8 @@
 >To make sense of all your awesome busy-nes to other developers please log changes and use sem-ver. 
     
 ## Unreleased
+## Version 0.3.0 06/06/2017
+[code] added endpoints and queries for notes and contacts
 
 ## Version 0.2.3 05/03/2017
 [refactor] rebuilt endpoints and queries to match convention `{payload: { 'prop': {key: prop.key, value: prop}, id?: prop.id, owner_id?:parent,id}}`

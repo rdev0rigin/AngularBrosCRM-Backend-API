@@ -14,6 +14,7 @@ import {quoteModel} from './table-models/quote.table-model';
 import {noteModel} from './table-models/note.table-model';
 
 export interface StoreManager {
+	deleteCompany(payload): Promise<string>;
 	getUser(payload): Promise<UserAttributes>;
 	createTestUser(): Promise<UserAttributes>;
 	getCompany(payload: any): Promise<CompanyAttributes[]>;
@@ -24,9 +25,10 @@ export interface StoreManager {
 	setContactProp(payload: any): Promise<ContactAttributes>;
 	createContact(payload: any): Promise<ContactAttributes>;
 	getNote(payload: any): Promise<NoteAttributes>
-	getNotes(): Promise<NoteAttributes[]>;
+	getNotes(payload): Promise<NoteAttributes[]>;
 	setNoteProp(payload: any): Promise<NoteAttributes>;
 	createNote(payload: any): Promise<NoteAttributes>;
+	destroyNote(payload): Promise<any>;
 	getQuotes(): Promise<QuoteAttributes[]>;
 	getQuote(payload: any): Promise<QuoteAttributes>;
 	setQuoteProp(payload): Promise<QuoteAttributes>;
@@ -59,12 +61,14 @@ export class CRMStoreManager implements StoreManager{
 		this.User.hasMany(this.Company);
 		this.Contact.belongsTo(this.Company);
 		this.Contact.hasMany(this.Note);
+		this.Note.belongsTo(this.Contact);
 		this.Company.belongsTo(this.User);
 		this.Company.hasMany(this.Contact);
 		this.Company.hasMany(this.Quote);
 		this.Quote.belongsTo(this.Company);
 		this.Quote.hasMany(this.QuoteLine);
 		this.QuoteLine.belongsTo(this.Quote);
+		// this.syncTable();
 	}
 
 	private dbConfig(config): void {
@@ -182,11 +186,23 @@ export class CRMStoreManager implements StoreManager{
 		})
 	}
 
+	public deleteCompany(payload: any): Promise<any> {
+		console.log('payload', payload);
+		return new Promise((resolve, reject) => {
+			this.Company.destroy({where: {id: payload.id}}).then(res => {
+				resolve(res);
+			}, error => {
+				reject('update error with' + error);
+			});
+		})
+	}
+
 
 	public getContact(payload: any): Promise<ContactAttributes> {
 		return new Promise((resolve, reject) => {
-			this.Contact.findById(payload.id)
+			this.Contact.findById(payload.id, {include: [this.Note]})
 				.then((contactsInstance: ContactInstance) => {
+				console.log('Contact instance ',contactsInstance);
 				resolve(contactsInstance);
 				reject('error with find ID');
 			});
@@ -209,7 +225,9 @@ export class CRMStoreManager implements StoreManager{
 				.then((contactInstance: ContactInstance) => {
 					contactInstance.update({
 						[payload.prop.key]:payload.prop.value
-					}).then()
+					}).then((instance: ContactInstance) => {
+						resolve(instance);
+					})
 				}, error => {
 					reject('update error with: ' + error);
 				});
@@ -220,7 +238,6 @@ export class CRMStoreManager implements StoreManager{
 		return new Promise((resolve, reject) => {
 			const props = Object.assign({}, payload.props, {company_id: payload.owner_id});
 			this.Contact.create(props).then((instance: any) => {
-				console.log('COMPANY INSTANCE', instance.sequelize.Sequelize.contact);
 				resolve(instance);
 			}, error => {
 					reject('update error with' + error);
@@ -237,9 +254,9 @@ export class CRMStoreManager implements StoreManager{
 		});
 	}
 
-	public getNotes(): Promise<any> {
+	public getNotes(payload): Promise<any> {
 		return new Promise((resolve, reject) => {
-			this.Note.findAll()
+			this.Note.findAll({where: {contact_id: payload.owner_id}})
 				.then((notes: NoteInstance[])=> {
 					resolve(notes);
 					reject('error: no notes found');
@@ -248,35 +265,36 @@ export class CRMStoreManager implements StoreManager{
 	}
 
 	public setNoteProp(payload): Promise<NoteAttributes> {
-		const KEY = Object.keys(payload.prop)[0];
-				console.log('SET', KEY);
+		console.log('notes payload',payload);
 		return new Promise((resolve, reject) => {
-			this.Note.update(payload.prop, {
-				where: {
-					id: payload.id
-			}
-			}).then((response: any) => {
-				this.Note.findById(payload.id)
-					.then((noteInstance: NoteInstance) => {
-					console.log('RESPONSE SET NOTE',response);
-					resolve(noteInstance);
+				this.Note.findById(payload.id).then(noteInstance => {
+					noteInstance.update({[payload.prop.key]: payload.prop.value})
+						.then(response => {
+							console.log('updated note with resposne: ', response);
+							resolve(response);
+						});
 				})
-			}, error => reject('update error with' + error))
-		}).catch(error => console.log('error on set', error))
+			})
 	}
 
 	public createNote(payload: any): Promise<any> {
+		const props = Object.assign({}, {contact_id: payload.owner_id});
 		return new Promise((resolve, reject) => {
-			this.Contact.findById(payload.owner_id).then((instance: any) => {
-				instance.models.Note.create(payload.props).then((noteInstance: NoteInstance) => {
-					resolve(noteInstance);
+			this.Note.create(props).then((instance: any) => {
+					resolve(instance);
 				}, error => {
 					reject('update error with' + error);
 				});
-			})
 		})
 	}
 
+	public destroyNote(payload): Promise<any> {
+		return new Promise((resolve, reject) => {
+			this.Note.destroy({where: {id: payload.id}}).then(res => {
+				resolve(res);
+			})
+		})
+	}
 	public getQuote(payload: any): Promise<QuoteAttributes> {
 		return new Promise((resolve, reject) => {
 			this.Quote.findById(payload.id,{

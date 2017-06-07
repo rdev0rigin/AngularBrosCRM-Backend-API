@@ -1,21 +1,22 @@
 import {CRMStoreManager} from '../orm/store-manager';
 import * as SocketIO from 'socket.io';
 import {error} from 'util';
-import {NoteAttributes} from '../orm/table-models/attributes/note.attributes';
 import {QuoteAttributes} from '../orm/table-models/attributes/quote.attributes';
 
-//TODO Update To real bi-directional sockets. ;P
+//TODO Update To real endpoints for bi-directional sockets. ;P
 export class Endpoints {
 	constructor() {}
+
 	public socketOnNotes(socket: SocketIO, crmStoreManager: CRMStoreManager): void {
-		socket.on('notes.create', (payload: any) => {
+		socket.on('note.create', (payload: any) => {
+			console.log('NoteCreated', payload);
 			if (payload){
 				crmStoreManager.createNote(payload)
 					.then(note => {
-						socket.emit('notes.create.response', note);
+						socket.emit('note.create.response', note);
 					});
 			} else {
-				socket.emit('notes.create.response', {error: 'Cannot create without payload.'});
+				socket.emit('note.create.response', {error: 'Cannot create without payload.'});
 			}
 		});
 
@@ -23,22 +24,32 @@ export class Endpoints {
 			if (payload && typeof payload.id === 'string') {
 				crmStoreManager.getNote(payload)
 					.then(note => {
+						console.log('not with ID RESPONSE HIT: ');
 						socket.emit('notes.get.response', note);
 					});
 			} else {
-				crmStoreManager.getNotes()
-					.then((notes: NoteAttributes[])=> {
+				console.log('get notes', payload);
+				crmStoreManager.getNotes(payload)
+					.then(notes => {
+						console.log('notes get response: ', notes);
 						socket.emit('notes.get.response', notes);
 				});
 			}
 		});
 
-		socket.on('notes.set', (payload: any) => {
+		socket.on('note.set', (payload: any) => {
 			crmStoreManager.setNoteProp(payload)
 				.then(response => {
-					socket.emit('notes.set.response', response);
+					socket.emit('note.set.response', response);
 				});
-		})
+		});
+
+		socket.on('note.destroy', (payload: any) => {
+			crmStoreManager.destroyNote(payload)
+				.then(response => {
+					socket.emit('note.destroy.response', response);
+				});
+		});
 	}
 
 	public socketOnUsers(socket: SocketIO, crmStoreManager: CRMStoreManager){
@@ -58,7 +69,6 @@ export class Endpoints {
 		socket.on('user.set', (payload: any) => {
 			crmStoreManager.setUserProp(payload)
 				.then(response => {
-					console.log('res', response);
 					socket.emit('user.set.response', response);
 				}, err => {
 					console.log('error', err)
@@ -106,7 +116,6 @@ export class Endpoints {
 		socket.on('contact.create', (payload?: any) => {
 			if(payload) {
 				crmStoreManager.createContact(payload).then(contact => {
-					console.log('contact create response', contact);
 					socket.emit('contact.create.response', contact);
 				}, err => {
 					console.log('error', err)
@@ -117,8 +126,8 @@ export class Endpoints {
 		socket.on('contacts.get', (payload?: any) => {
 			if (payload && typeof payload.id === 'string'){
 				crmStoreManager.getContact(payload)
-					.then(contacts => {
-						socket.emit('contacts.get.response', payload);
+					.then(contact => {
+						socket.emit('contacts.get.response', contact);
 					}, err => {
 						console.log('error', err)
 					});
@@ -132,11 +141,11 @@ export class Endpoints {
 			}
 		});
 
-		socket.on('contacts.set', (payload: any) => {
+		socket.on('contact.set', (payload: any) => {
 			if(payload && typeof payload.id === 'string')
 				crmStoreManager.setContactProp(payload)
-				.then(contacts => {
-					socket.emit('contacts.set.response', contacts);
+				.then(contact => {
+					socket.emit('contact.set.response', contact);
 				}, err => {
 					console.log('error', err)
 				});
@@ -181,6 +190,14 @@ export class Endpoints {
 				.createCompany(payload)
 				.then(company => {
 					socket.emit('company.create.response', company);
+				});
+		});
+
+		socket.on('company.delete', (payload?: any) => {
+			crmStoreManager
+				.deleteCompany(payload)
+				.then(company => {
+					socket.emit('company.delete.response', company);
 				});
 		});
 	}
