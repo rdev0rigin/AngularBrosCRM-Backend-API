@@ -16,14 +16,17 @@ import {noteModel} from './table-models/note.table-model';
 export interface StoreManager {
 	deleteCompany(payload): Promise<string>;
 	getUser(payload): Promise<UserAttributes>;
+	setUserProps(payload): Promise<UserAttributes>;
 	createTestUser(): Promise<UserAttributes>;
 	getCompany(payload: any): Promise<CompanyAttributes[]>;
 	setCompanyProp(payload: any): Promise<CompanyAttributes>;
+	setCompanyProps(payload): Promise<CompanyAttributes>;
 	createCompany(payload: any): Promise<CompanyAttributes>;
 	getContact(payload: any): Promise<ContactAttributes>;
-	getContacts(): Promise<ContactAttributes[]>;
-	setContactProp(payload: any): Promise<ContactAttributes>;
+	getContacts(payload: any): Promise<ContactAttributes[]>;
+	setContactProps(payload: any): Promise<ContactAttributes>;
 	createContact(payload: any): Promise<ContactAttributes>;
+	deleteContact(payload: any): Promise<any>;
 	getNote(payload: any): Promise<NoteAttributes>
 	getNotes(payload): Promise<NoteAttributes[]>;
 	setNoteProp(payload: any): Promise<NoteAttributes>;
@@ -59,11 +62,11 @@ export class CRMStoreManager implements StoreManager{
 		this.Quote = quoteModel(sequelizeStatic, this.sequelize);
 		this.QuoteLine = quoteLineModel(sequelizeStatic, this.sequelize);
 		this.User.hasMany(this.Company);
-		this.Contact.belongsTo(this.Company);
+		this.Contact.belongsTo(this.Company, {foreignKey: {allowNull: false}});
 		this.Contact.hasMany(this.Note);
-		this.Note.belongsTo(this.Contact);
+		this.Note.belongsTo(this.Contact, {foreignKey: {allowNull: false}});
 		this.Company.belongsTo(this.User);
-		this.Company.hasMany(this.Contact);
+		this.Company.hasMany(this.Contact,{foreignKey: {allowNull: false}});
 		this.Company.hasMany(this.Quote);
 		this.Quote.belongsTo(this.Company);
 		this.Quote.hasMany(this.QuoteLine);
@@ -106,18 +109,14 @@ export class CRMStoreManager implements StoreManager{
 		});
 	}
 
-	public setUserProp(payload): Promise<UserAttributes> {
+	public setUserProps(payload): Promise<UserAttributes> {
 		return new Promise((resolve, reject) => {
-			this.User.findById(payload.id).then(userInstance => {
-				userInstance.update({[payload.prop.key]: payload.prop.value})
-					.then(response => {
-						console.log('user set', response);
-						if(+response[0] === 1) {
-							this.User.findById(payload.id)
-								.then((userInstance: UserInstance) => {
-								resolve(userInstance);
-							}, error => reject('user set prop error: ' + error))
-						}
+			this.User.findById(payload.id)
+				.then(userInstance => {
+					userInstance.update(payload.props)
+						.then(response => {
+							resolve(response);
+							console.log('user set', response);
 					}, error => {
 						reject('update error with' + error);
 				}).catch(error => console.log(error));
@@ -167,10 +166,23 @@ export class CRMStoreManager implements StoreManager{
 		return new Promise((resolve, reject) => {
 			this.Company.findById(payload.id)
 				.then((companyInstance: CompanyInstance) => {
-						companyInstance.update({[payload.prop.key]: payload.prop.value}).then((updatedCompanyInstance: CompanyInstance) => {
-							resolve(updatedCompanyInstance);
-					}).catch(err => console.log('ERROR : setCompanyProp', err))
-				}, error => reject('Company set prop error :' + error))
+						companyInstance.update({[payload.prop.key]: payload.prop.value})
+							.then((updatedCompanyInstance: CompanyInstance) => {
+								resolve(updatedCompanyInstance);
+						}).catch(err => console.log('ERROR : setCompanyProp', err))
+			}, error => reject('Company set prop error :' + error))
+		})
+	}
+
+	public setCompanyProps(payload): Promise<CompanyAttributes> {
+		return new Promise((resolve, reject) => {
+			this.Company.findById(payload.id)
+				.then((companyInstance: CompanyInstance) => {
+						companyInstance.update(payload.props)
+							.then((updatedCompanyInstance: CompanyInstance) => {
+								resolve(updatedCompanyInstance);
+						}).catch(err => console.log('ERROR : setCompanyProp', err))
+			}, error => reject('Company set prop error :' + error))
 		})
 	}
 
@@ -198,6 +210,14 @@ export class CRMStoreManager implements StoreManager{
 	}
 
 
+	public deleteContact(payload: any): Promise<any> {
+		return new Promise((resolve, reject) => {
+			this.Contact.destroy({where: {id: payload.id}}).then(res => {
+				resolve(res);
+			})
+		})
+	}
+
 	public getContact(payload: any): Promise<ContactAttributes> {
 		return new Promise((resolve, reject) => {
 			this.Contact.findById(payload.id, {include: [this.Note]})
@@ -209,28 +229,35 @@ export class CRMStoreManager implements StoreManager{
 		});
 	}
 
-	public getContacts(): Promise<ContactAttributes[]> {
+	public getContacts(payload): Promise<ContactAttributes[]> {
 		return new Promise((resolve, reject) => {
-			this.Contact.findAll({
-				include: [this.Note]
-			}).then((contactInstances: ContactInstance[]) => {
-				resolve(contactInstances);
-			}, error => reject('error finding Contacts: ' + error));
+			if(payload.owner_id){
+				this.Contact.findAll({where: {company_id: payload.owner_id}, include: [this.Note]})
+					.then((contactsInstance: ContactInstance[]) => {
+						console.log('CONTACTS INSTANCE', contactsInstance);
+						resolve(contactsInstance);
+					})
+			} else {
+				this.Contact.findAll({include: [this.Note]})
+					.then((contactsInstance: ContactInstance[]) => {
+					console.log('CONTACTS INSTANCE', contactsInstance);
+					resolve(contactsInstance);
+				}, error => reject('error finding Contacts: ' + error));
+			}
 		});
 	}
 
-	public setContactProp(payload): Promise<any> {
+	public setContactProps(payload): Promise<any> {
 		return new Promise((resolve, reject) => {
 			this.Contact.findById(payload.id)
 				.then((contactInstance: ContactInstance) => {
-					contactInstance.update({
-						[payload.prop.key]:payload.prop.value
-					}).then((instance: ContactInstance) => {
-						resolve(instance);
+					contactInstance.update(payload.props)
+						.then((instance: ContactInstance) => {
+							resolve(instance);
 					})
-				}, error => {
-					reject('update error with: ' + error);
-				});
+			}, error => {
+				reject('update error with: ' + error);
+			});
 		})
 	}
 
@@ -266,7 +293,7 @@ export class CRMStoreManager implements StoreManager{
 
 	public setNoteProp(payload): Promise<NoteAttributes> {
 		console.log('notes payload',payload);
-		return new Promise((resolve, reject) => {
+		return new Promise((resolve) => {
 				this.Note.findById(payload.id).then(noteInstance => {
 					noteInstance.update({[payload.prop.key]: payload.prop.value})
 						.then(response => {
@@ -289,7 +316,7 @@ export class CRMStoreManager implements StoreManager{
 	}
 
 	public destroyNote(payload): Promise<any> {
-		return new Promise((resolve, reject) => {
+		return new Promise((resolve) => {
 			this.Note.destroy({where: {id: payload.id}}).then(res => {
 				resolve(res);
 			})

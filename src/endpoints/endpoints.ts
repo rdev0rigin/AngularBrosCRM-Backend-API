@@ -67,7 +67,8 @@ export class Endpoints {
 		});
 
 		socket.on('user.set', (payload: any) => {
-			crmStoreManager.setUserProp(payload)
+					console.log('user.set.response', payload);
+			crmStoreManager.setUserProps(payload)
 				.then(response => {
 					socket.emit('user.set.response', response);
 				}, err => {
@@ -132,7 +133,7 @@ export class Endpoints {
 						console.log('error', err)
 					});
 			} else {
-				crmStoreManager.getContacts()
+				crmStoreManager.getContacts(payload)
 					.then(contacts => {
 						socket.emit('contacts.get.response', contacts);
 				}, err => {
@@ -143,43 +144,53 @@ export class Endpoints {
 
 		socket.on('contact.set', (payload: any) => {
 			if(payload && typeof payload.id === 'string')
-				crmStoreManager.setContactProp(payload)
+				crmStoreManager.setContactProps(payload)
 				.then(contact => {
 					socket.emit('contact.set.response', contact);
 				}, err => {
 					console.log('error', err)
 				});
 		});
+
+		socket.on('contact.destroy', (payload: any) => {
+			crmStoreManager.deleteContact(payload).then(res => {
+				socket.emit('contact.destroy.response', res);
+			})
+		})
 	}
 
 	public socketOnCompanies(socket: SocketIO, crmStoreManager: CRMStoreManager) {
-		socket.on('companies.get', (payload?: any) => {
-			if (payload && typeof payload.id === 'string') {
-				crmStoreManager.getCompany(payload)
-					.then((companies: any) => {
-						socket.emit('companies.get.response', companies);
-					}, err => {
-						console.log('error', err)
-					});
-			} else {
-				crmStoreManager.getCompanies()
-					.then((companies: any) => {
-					console.log('RESPONDER ', companies[0]['$modelOptions'].name);
-						socket.emit('companies.get.response', companies);
-					}, err => {
-						console.log('error', err)
-					});
-			}
+		socket.on('companies.get', () => {
+			crmStoreManager.getCompanies()
+				.then((companies: any) => {
+					socket.emit('companies.get.response', companies);
+				}, err => {
+					console.log('error', err)
+				});
+		});
+
+		socket.on('company.get', (payload) => {
+			crmStoreManager.getCompany(payload)
+				.then((companies: any) => {
+					socket.emit('company.get.response', companies);
+				}, err => {
+					console.log('error', err)
+				});
 		});
 
 		socket.on('company.set', (payload: any) => {
-			if (payload && typeof payload.id === 'string') {
+			if (payload.prop && typeof payload.id === 'string') {
 				crmStoreManager.setCompanyProp(payload)
 				.then(company => {
 					socket.emit('company.set.response', company);
 				}, err => {
 					console.log('error', err)
 				});
+			} else if(payload.props){
+				crmStoreManager.setCompanyProps(payload)
+					.then(company => {
+						socket.emit('company.set.response', company);
+				})
 			} else {
 				socket.emit('company.set.response', {error: 'Error: No payload or id'});
 			}
