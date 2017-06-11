@@ -42,9 +42,9 @@ var backendConfig = {
 
 	// recordsPath: path.join(__dirname, 'bundle/_records'),
 	plugins: [
-		new WebpackShellPlugin({
-			onBuildEnd: ['node ./bundle/backend.js']
-		})
+		// new WebpackShellPlugin({
+		// 	onBuildEnd: ['node ./bundle/backend.js']
+		// })
 	],
 	module: {
 		loaders: [
