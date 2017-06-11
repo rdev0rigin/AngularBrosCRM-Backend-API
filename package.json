@@ -1,6 +1,6 @@
 {
   "name": "angular-bros-socket-backend",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "scripts": {
     "prod-push": " webpack -p -q git add -A && git commit -m \"updated bundle\" && git push origin master",
     "start": "npm run clean && webpack -p && node bundle/backend.js",

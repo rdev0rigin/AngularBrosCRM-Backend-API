@@ -78,39 +78,76 @@ export class Endpoints {
 	}
 
 	public socketOnQuotes(socket: SocketIO , crmStoreManager: CRMStoreManager) {
-		socket.on('quotes.create', (payload: any) => {
+		socket.on('quote.create', (payload: any) => {
 			if (payload){
 				crmStoreManager.createQuote(payload)
 					.then((quote: QuoteAttributes) => {
-						socket.emit('quotes.create.response', quote);
+						socket.emit('quote.create.response', quote);
 					}, err => {
 						console.log('error', err)
 					});
 			}
 		});
+
 
 		socket.on('quotes.get', (payload?: any) => {
-			if(payload && typeof payload.id === 'string') {
-				crmStoreManager.getQuote(payload)
-					.then(quotes => {
-						socket.emit('quotes.get.response', quotes);
-					}, err => {
-						console.log('error', err)
-					});
-			} else {
-				crmStoreManager.getQuotes().then((quotes: QuoteAttributes[]) => {
+			crmStoreManager.getQuotes(payload)
+				.then((quotes: QuoteAttributes[]) => {
+					console.log('QUOTES RESPONSE 2', quotes);
 					socket.emit('quotes.get.response', quotes);
-				})
-			}
+			})
 		});
 
-		socket.on('quotes.set', (payload: any) => {
-			crmStoreManager.setQuoteProp(payload).then(quotes => {
-				socket.emit('quotes.set.response', quotes);
+		socket.on('quote.get', (payload?: any) => {
+			crmStoreManager.getQuote(payload)
+				.then(quotes => {
+					console.log('QUOTES RESPONSE', quotes);
+					socket.emit('quote.get.response', quotes);
+				}, err => {
+					console.log('error', err)
+			});
+		});
+
+		socket.on('quote.set', (payload: any) => {
+			crmStoreManager.setQuoteProps(payload)
+				.then(quotes => {
+					socket.emit('quote.set.response', quotes);
 			}, err => {
 				console.log('error', err)
 			})
-		})
+		});
+
+		socket.on('quoteLine.set', (payload: any) => {
+			crmStoreManager.setQuoteLineProps(payload)
+				.then(quotes => {
+					socket.emit('quoteLine.set.response', quotes);
+			}, err => {
+				console.log('error', err)
+			})
+		});
+
+		socket.on('quoteLine.create', (payload: any) => {
+			crmStoreManager.createQuoteLine(payload)
+				.then(res => {
+					socket.emit('quoteLine.create.response', res);
+				})
+		});
+
+		socket.on('quote.destroy', (payload: any) => {
+			crmStoreManager.destroyQuote(payload)
+				.then(res => {
+					socket.emit('quote.destroy.response', res);
+				})
+		});
+
+		socket.on('quoteLine.destroy', (payload: any) => {
+			crmStoreManager.destroyQuoteLine(payload)
+				.then(res => {
+					socket.emit('quoteLine.destroy.response', res);
+				})
+		});
+
+
 	}
 
 	public socketOnContacts(socket: SocketIO, crmStoreManager: CRMStoreManager) {

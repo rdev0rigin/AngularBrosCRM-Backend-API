@@ -12,6 +12,7 @@ import {contactModel} from './table-models/contact.table-model';
 import {quoteLineModel} from './table-models/quote-line.table-model';
 import {quoteModel} from './table-models/quote.table-model';
 import {noteModel} from './table-models/note.table-model';
+import * as _ from 'lodash';
 
 export interface StoreManager {
 	deleteCompany(payload): Promise<string>;
@@ -32,11 +33,13 @@ export interface StoreManager {
 	setNoteProp(payload: any): Promise<NoteAttributes>;
 	createNote(payload: any): Promise<NoteAttributes>;
 	destroyNote(payload): Promise<any>;
-	getQuotes(): Promise<QuoteAttributes[]>;
+	getQuotes(payload: any): Promise<QuoteAttributes[]>;
 	getQuote(payload: any): Promise<QuoteAttributes>;
-	setQuoteProp(payload): Promise<QuoteAttributes>;
+	setQuoteProps(payload): Promise<QuoteAttributes>;
 	createQuote(payload: any): Promise<QuoteAttributes>;
 	createQuoteLine(quoteId, quoteLine): Promise<any>;
+	setQuoteLineProps(payload: any): Promise<QuoteAttributes>;
+	destroyQuoteLine (payload): Promise<any>;
 }
 
 export class CRMStoreManager implements StoreManager{
@@ -211,7 +214,7 @@ export class CRMStoreManager implements StoreManager{
 
 
 	public deleteContact(payload: any): Promise<any> {
-		return new Promise((resolve, reject) => {
+		return new Promise((resolve) => {
 			this.Contact.destroy({where: {id: payload.id}}).then(res => {
 				resolve(res);
 			})
@@ -325,14 +328,30 @@ export class CRMStoreManager implements StoreManager{
 	public getQuote(payload: any): Promise<QuoteAttributes> {
 		return new Promise((resolve, reject) => {
 			this.Quote.findById(payload.id,{
-				include:
-					[this.QuoteLine]
+				include: [
+					this.QuoteLine
+				]
 			}).then((quotesInstance: QuoteInstance) => {
+			console.log('FIND BY ID', quotesInstance);
 				resolve(quotesInstance);
 			}, error => reject('error with find ID'));
 		});
 	}
-	public getQuotes(): Promise<QuoteAttributes[]> {
+	public getQuotes(payload): Promise<QuoteAttributes[]> {
+		if(payload.owner_id){
+			return new Promise((resolve, reject) => {
+				this.Quote.findAll({
+					include: [
+						this.QuoteLine
+					],
+					where: {
+						company_id: payload.owner_id
+					}
+				}).then((quotesInstance: QuoteInstance[]) => {
+					resolve(quotesInstance);
+				}, error => reject('error with find ID'));
+			});
+		} else {
 			return new Promise((resolve, reject) => {
 				this.Quote.findAll({
 					include:
@@ -342,10 +361,30 @@ export class CRMStoreManager implements StoreManager{
 				}, error => reject('error with find ID'));
 			});
 		}
+	}
 
-	public setQuoteProp(payload: any): Promise<QuoteAttributes> {
+	public setQuoteProps(payload: any): Promise<QuoteAttributes> {
 		return new Promise((resolve, reject) => {
-			this.Quote.update(payload.prop, {
+			this.Quote.update(payload.props, {
+				where:
+					{id: payload.id}
+			}).then((response: any) => {
+				if(+response[0] === 1)
+				this.Quote.findById(payload.id, {
+					include: [this.QuoteLine]
+				})
+					.then((quoteInstance_find:QuoteInstance) => {
+						resolve(quoteInstance_find)
+					})
+			}, error => {
+				reject('update error with' + error);
+			});
+		})
+	}
+
+	public setQuoteLineProps(payload: any): Promise<QuoteAttributes> {
+		return new Promise((resolve, reject) => {
+			this.Quote.update(payload.props, {
 				where:
 					{id: payload.id}
 			}).then((response: any) => {
@@ -373,16 +412,28 @@ export class CRMStoreManager implements StoreManager{
 			})
 	}
 
-	public createQuoteLine(quoteId, quoteLine): Promise<any> {
-		return new Promise((resolve, reject) => {
-			this.Quote.findById(quoteId)
-				.then((quoteInstance: any) => {
-				quoteInstance.QuoteLine.create(quoteLine).then(quoteLineInstance => {
-					resolve(quoteLineInstance);
-				})
-			}, error => {
-				reject('update error with' + error);
+	public createQuoteLine(payload): Promise<any> {
+		const props = _.merge({}, payload.props, {quote_id: payload.owner_id});
+		return new Promise((resolve) => {
+			this.QuoteLine.create(props).then(res => {
+				resolve(res);
 			});
+		})
+	}
+
+	public destroyQuote(payload): Promise<any> {
+		return new Promise((resolve) => {
+			this.Quote.destroy({where: {id: payload.id}}).then(res => {
+				resolve(res);
+			})
+		})
+	}
+
+	public destroyQuoteLine (payload): Promise<any> {
+		return new Promise((resolve) => {
+			this.Quote.destroy({where: {id: payload.id}}).then(res => {
+				resolve(res);
+			})
 		})
 	}
 }

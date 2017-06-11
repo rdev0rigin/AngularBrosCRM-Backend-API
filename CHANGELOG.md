@@ -2,6 +2,9 @@
 >To make sense of all your awesome busy-nes to other developers please log changes and use sem-ver. 
     
 ## Unreleased
+## Version 0.5.0 06/06/2017
+[code] built quotes and quoteLines endpoints and queries
+
 ## Version 0.4.0 06/06/2017
 [code] added endpoints for destroying contacts and companies
 [refactor] renamed setProp to setProps and used convention `{id: model.id, props: updatedModel}`
