@@ -332,7 +332,6 @@ export class CRMStoreManager implements StoreManager{
 					this.QuoteLine
 				]
 			}).then((quotesInstance: QuoteInstance) => {
-			console.log('FIND BY ID', quotesInstance);
 				resolve(quotesInstance);
 			}, error => reject('error with find ID'));
 		});
@@ -384,21 +383,11 @@ export class CRMStoreManager implements StoreManager{
 
 	public setQuoteLineProps(payload: any): Promise<QuoteAttributes> {
 		return new Promise((resolve, reject) => {
-			this.Quote.update(payload.props, {
-				where:
-					{id: payload.id}
-			}).then((response: any) => {
-				if(+response[0] === 1)
-				this.Quote.findById(payload.id, {
-					include: [this.QuoteLine]
+			this.QuoteLine.update(payload.props, {where: {id: payload.id}})
+				.then((response: any) => {
+					resolve(response)
 				})
-					.then((quoteInstance_find:QuoteInstance) => {
-						resolve(quoteInstance_find)
-					})
-			}, error => {
-				reject('update error with' + error);
-			});
-		})
+		});
 	}
 
 	public createQuote(payload: any): Promise<QuoteAttributes> {

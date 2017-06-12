@@ -2,6 +2,10 @@
 >To make sense of all your awesome busy-nes to other developers please log changes and use sem-ver. 
     
 ## Unreleased
+
+## Version 0.6.0 06/12/2017
+[bug:fix] rebuilt `setQuoteLinesProps`
+
 ## Version 0.5.0 06/06/2017
 [code] built quotes and quoteLines endpoints and queries
 

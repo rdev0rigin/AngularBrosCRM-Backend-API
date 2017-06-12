@@ -24,14 +24,12 @@ export class Endpoints {
 			if (payload && typeof payload.id === 'string') {
 				crmStoreManager.getNote(payload)
 					.then(note => {
-						console.log('not with ID RESPONSE HIT: ');
 						socket.emit('notes.get.response', note);
 					});
 			} else {
 				console.log('get notes', payload);
 				crmStoreManager.getNotes(payload)
 					.then(notes => {
-						console.log('notes get response: ', notes);
 						socket.emit('notes.get.response', notes);
 				});
 			}
@@ -93,7 +91,6 @@ export class Endpoints {
 		socket.on('quotes.get', (payload?: any) => {
 			crmStoreManager.getQuotes(payload)
 				.then((quotes: QuoteAttributes[]) => {
-					console.log('QUOTES RESPONSE 2', quotes);
 					socket.emit('quotes.get.response', quotes);
 			})
 		});
@@ -101,7 +98,6 @@ export class Endpoints {
 		socket.on('quote.get', (payload?: any) => {
 			crmStoreManager.getQuote(payload)
 				.then(quotes => {
-					console.log('QUOTES RESPONSE', quotes);
 					socket.emit('quote.get.response', quotes);
 				}, err => {
 					console.log('error', err)
@@ -119,8 +115,8 @@ export class Endpoints {
 
 		socket.on('quoteLine.set', (payload: any) => {
 			crmStoreManager.setQuoteLineProps(payload)
-				.then(quotes => {
-					socket.emit('quoteLine.set.response', quotes);
+				.then(quoteLine => {
+					socket.emit('quoteLine.set.response', quoteLine);
 			}, err => {
 				console.log('error', err)
 			})
