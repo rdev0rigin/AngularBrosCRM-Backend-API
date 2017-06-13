@@ -420,7 +420,7 @@ export class CRMStoreManager implements StoreManager{
 
 	public destroyQuoteLine (payload): Promise<any> {
 		return new Promise((resolve) => {
-			this.Quote.destroy({where: {id: payload.id}}).then(res => {
+			this.QuoteLine.destroy({where: {id: payload.id}}).then(res => {
 				resolve(res);
 			})
 		})

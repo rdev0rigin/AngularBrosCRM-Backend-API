@@ -3,6 +3,9 @@
     
 ## Unreleased
 
+## Version 0.6.1 06/13/2017
+[bug:fix] quoteLine destroy fixed
+
 ## Version 0.6.0 06/12/2017
 [bug:fix] rebuilt `setQuoteLinesProps`
 
