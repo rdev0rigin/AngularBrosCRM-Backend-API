@@ -74,7 +74,6 @@ export class CRMStoreManager implements StoreManager{
 		this.Quote.belongsTo(this.Company);
 		this.Quote.hasMany(this.QuoteLine);
 		this.QuoteLine.belongsTo(this.Quote);
-		// this.syncTable();
 	}
 
 	private dbConfig(config): void {

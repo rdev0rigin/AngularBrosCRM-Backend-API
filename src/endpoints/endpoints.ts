@@ -2,10 +2,24 @@ import {CRMStoreManager} from '../orm/store-manager';
 import * as SocketIO from 'socket.io';
 import {error} from 'util';
 import {QuoteAttributes} from '../orm/table-models/attributes/quote.attributes';
+import {EmailManager} from '../emailer/email-manager';
 
-//TODO Update To real endpoints for bi-directional sockets. ;P
+//TODO Update endpoint's pattern. ;P
 export class Endpoints {
 	constructor() {}
+
+	public socketOnEmailer(socket: SocketIO, emailer: EmailManager): void {
+		socket.on('email.quote', (payload: any) => {
+		console.log(payload);
+			emailer.sendQuoteEmail(payload.template, payload.sendTo, payload.subject)
+				.then( res => {
+					socket.emit('email.quote.response', res);
+			})
+				.catch(err => {
+					socket.emit('email.quote.response', err);
+				})
+		})
+	}
 
 	public socketOnNotes(socket: SocketIO, crmStoreManager: CRMStoreManager): void {
 		socket.on('note.create', (payload: any) => {

@@ -2,6 +2,8 @@
 >To make sense of all your awesome busy-nes to other developers please log changes and use sem-ver. 
     
 ## Unreleased
+## Version 0.7.0 06/14/2017
+[code] Integrated SendGrid into an API
 
 ## Version 0.6.1 06/13/2017
 [bug:fix] quoteLine destroy fixed

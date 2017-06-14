@@ -3,8 +3,11 @@ import * as express from 'express';
 import * as Socketio from 'socket.io';
 import {CRMStoreManager} from './orm/store-manager';
 import {Endpoints} from './endpoints/endpoints';
+import {EmailManager} from './emailer/email-manager';
+
 
 export class Server extends Endpoints {
+	public emailManager: EmailManager;
 	private app: express.Application;
 	private server: express.Server;
 	private IO;
@@ -28,6 +31,7 @@ export class Server extends Endpoints {
 		this.server.listen(this.port);
 		this.IO = Socketio(this.server);
 		this.crmStoreManager = new CRMStoreManager();
+		this.emailManager = new EmailManager();
 	}
 
 	private endPoints(): void {
@@ -37,13 +41,7 @@ export class Server extends Endpoints {
 			this.socketOnContacts(socket, this.crmStoreManager);
 			this.socketOnUsers(socket, this.crmStoreManager);
 			this.socketOnNotes(socket, this.crmStoreManager);
-			socket.on('user.test.create', () => {
-				this.crmStoreManager
-					.createTestUser()
-					.then(user => {
-						socket.emit('user.test.create.response', user);
-					})
-			});
+			this.socketOnEmailer(socket, this.emailManager)
 		})
 	}
 }
