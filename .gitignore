@@ -9,4 +9,4 @@ build/*
 .idea/
 build/
 dist/
-.local
+*.local.*

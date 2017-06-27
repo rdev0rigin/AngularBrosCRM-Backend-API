@@ -1,1 +1,0 @@
-export const MAIL_API_KEY = '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';
