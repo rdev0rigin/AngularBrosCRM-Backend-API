@@ -2,9 +2,8 @@ import * as http from 'http';
 import * as express from 'express';
 import * as Socketio from 'socket.io';
 import {CRMStoreManager} from './orm/store-manager';
-import {Endpoints} from './endpoints/endpoints';
+import {Endpoints} from './channel-points/channel-points';
 import {EmailManager} from './emailer/email-manager';
-
 
 export class Server extends Endpoints {
 	public emailManager: EmailManager;

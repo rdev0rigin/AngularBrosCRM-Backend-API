@@ -3,6 +3,9 @@
     
 ## Unreleased
 
+## Version 0.7.1 07/15/2017
+[refactor] Renamed endpoints to channel points
+
 ## Version 0.7.0 06/14/2017
 [code] Integrated SendGrid into an API
 
